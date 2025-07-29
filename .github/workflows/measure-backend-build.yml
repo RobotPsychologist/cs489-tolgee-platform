@@ -1,0 +1,44 @@
+name: Measure Backend Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backend-build:
+    name: Build backend measurement ${{ matrix.commit }} 🏗️
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        commit:
+          - 65905a51c60b44ff35c3757c5ee39288981c219e
+          - 0cb399d2ff5baffd4ca2574b3c1b9ffca78705fd
+          - 08d654de6242be7ddd6887f1b76c8cfd001f25d6
+          - 8e02519c0ebad551ace2e51453e6622936e12988
+          - 4108c9f91ee05e2dc4b096ead79b9b97bb51ffb3
+          - c47e2b2b44519f1110d1c86ac46ba479bffb9dc7
+          - e596ea41818e01370727762d5638a9082c28aa41
+          - d95c83219b698273ce2d7ce36833a97bc37b6b81
+    steps:
+      - name: Checkout code at commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.commit }}
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      # Don't build test classes here; they'll only be used once during the test run anyway.
+      # This amortizes the cost of compilation across each test job, rather than paying it upfront.
+      #
+      # Note: seems like running in parallel has the weird side effect of causing Spring dependency management to hang
+      # It's very occasional, and doesn't seem to occur locally, but parallel being the issue is possible
+      # See: https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/370
+      - name: Build backend
+        run: |
+          start_time=$(date +%s)
+          ./gradlew classes jar bootJar
+          status=$?
+          end_time=$(date +%s)
+          duration=$((end_time - start_time))
+          echo "Build completed in ${duration} seconds"
+          exit $status
