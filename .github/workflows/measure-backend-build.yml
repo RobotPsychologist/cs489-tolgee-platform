@@ -2,6 +2,8 @@ name: Measure Backend Build
 
 on:
   workflow_dispatch:
+  push:
+    branches: [heidi/historical-build-times]
 
 jobs:
   backend-build:
