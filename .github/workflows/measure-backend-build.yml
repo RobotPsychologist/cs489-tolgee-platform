@@ -21,10 +21,18 @@ jobs:
           - e596ea41818e01370727762d5638a9082c28aa41
           - d95c83219b698273ce2d7ce36833a97bc37b6b81
     steps:
+      - name: Checkout workflow files
+        uses: actions/checkout@v4
+        with:
+          ref: heidi/historical-build-times
+          # This ensures .github/actions/setup-env is present
+
       - name: Checkout code at commit
         uses: actions/checkout@v4
         with:
           ref: ${{ matrix.commit }}
+          path: code
+          # This checks out the code you want to build into a subdirectory
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -37,6 +45,7 @@ jobs:
       # See: https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/370
       - name: Build backend
         run: |
+          cd code
           start_time=$(date +%s)
           ./gradlew classes jar bootJar
           status=$?
