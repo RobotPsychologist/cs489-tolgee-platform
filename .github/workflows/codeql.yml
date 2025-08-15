@@ -1,0 +1,44 @@
+name: CodeQL Scan
+
+on:
+  push:
+    branches: [main, test-codeql]
+  pull_request:
+    branches: [main]
+    paths: ['**/*.ts', '**/*.tsx']
+  schedule:
+    - cron: '0 4 * * 1'  # Weekly on Monday
+
+jobs:
+  codeql:
+    name: CodeQL Analysis (TypeScript)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: typescript
+          queries: security-extended
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+      
+      - name: Copy SARIF into repo-local folder
+        run: |
+          mkdir -p codeql-output/results
+          cp ../results/javascript.sarif codeql-output/results/javascript.sarif
+
+      - name: Upload SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-results
+          path: codeql-output/results/javascript.sarif

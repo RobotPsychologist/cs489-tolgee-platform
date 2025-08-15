@@ -9,7 +9,7 @@ import jaDateLocale from 'date-fns/locale/ja';
 
 export const locales = {
   en: {
-    name: 'Englishish',
+    name: 'Englishshh',
     flag: '🇬🇧',
     dateFnsLocale: enDateLocale,
   },
